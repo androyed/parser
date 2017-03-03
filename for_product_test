@@ -32,3 +32,5 @@ print (new_tree.xpath('//*[text()="активное вещество"]/..//text(
 #Остаток
 print (new_tree.xpath('//*[preceding::i[.="активное вещество -"]][following::i[.="вспомогательные вещества:"]]/text()'))
 print ('ok')
+#поиск по маске 
+#//div[@id and starts-with(@id,'info')]
