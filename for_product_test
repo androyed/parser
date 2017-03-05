@@ -1,8 +1,9 @@
 import urllib.request
 from lxml import etree
 
+new_url = 'http://biosfera.kz/product/product?path=13_451&product_id=5623'
 #new_url = 'http://biosfera.kz/product/product?path=13_451&product_id=24005'
-new_url = 'http://biosfera.kz/product/product?path=13_451&product_id=13612'
+#new_url = 'http://biosfera.kz/product/product?path=13_451&product_id=13612'
 new_request = urllib.request.Request(new_url)
 new_response = urllib.request.urlopen(new_request)
 new_html_code = new_response.read().decode('utf-8')
@@ -27,10 +28,19 @@ new_tree = etree.HTML(new_html_code)
 #print (new_tree.xpath('//*[preceding::i[.="активные вещества"]][following::i[.="вспомогательные вещества"]]/text()'))
 #print ('ok')
 
+name = (new_tree.xpath('.//span[@itemprop="name"]/text()')).__str__()
+print ('name:' ,name.replace("['", "").replace("']", "") )
 
-print (new_tree.xpath('//*[text()="активное вещество"]/..//text()'))
-#Остаток
-print (new_tree.xpath('//*[preceding::i[.="активное вещество -"]][following::i[.="вспомогательные вещества:"]]/text()'))
+price = new_tree.xpath('.//div[@id="fix_price"]/text()').__str__()
+print('price:' , price.replace("['", "").replace("']", ""))
+
+main_active = (new_tree.xpath('//*[starts-with(text(),"активн")]/..//text()')).__str__()
+print ('акт:',main_active.replace("\\xa0", "" ).replace("['", "").replace("']", ""))
+
+other_active = (new_tree.xpath('//*[preceding::i[starts-with(.,"активн")]][following::i[starts-with(.,"вспомог")]]/text()')).__str__()
+print ('Other:',other_active.replace("\\xa0", "" ).replace("['", "").replace("']", ""))
+
+
 print ('ok')
-#поиск по маске 
-#//div[@id and starts-with(@id,'info')]
+
+http://sergo.eu/blog/online/python-3-sozdanie-xml
