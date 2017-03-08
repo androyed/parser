@@ -1,6 +1,55 @@
 import urllib.request
 from lxml import etree
 
+from xml.dom import minidom
+
+def getProductAttribs(url):
+    new_request = urllib.request.Request(url)
+    new_response = urllib.request.urlopen(new_request)
+    new_html_code = new_response.read().decode('utf-8')
+    new_tree = etree.HTML(new_html_code)
+
+    name = (new_tree.xpath('.//span[@itemprop="name"]/text()')).__str__()
+    price = new_tree.xpath('.//div[@id="fix_price"]/text()').__str__()
+    main_active = (new_tree.xpath('//*[starts-with(text(),"активн")]/..//text()')).__str__()
+    other_active = (new_tree.xpath('//*[preceding::i[starts-with(.,"активн")]][following::i[starts-with(.,"вспомог")]]/text()')).__str__()
+
+    #Создаем элемент XML файла product
+    doc = minidom.Document()
+    #product
+    productXML = doc.createElement('product')
+
+    #url
+    urlXML = doc.createElement('url')
+    url_text = doc.createTextNode(url)
+    urlXML.appendChild(url_text)
+
+    productXML.appendChild(urlXML)
+
+    #name
+    nameXML = doc.createElement('name')
+    name_text = doc.createTextNode(name)
+    nameXML.appendChild(name_text)
+
+    productXML.appendChild(nameXML)
+    
+    #price
+    priceXML = doc.createElement('price')
+    price_text = doc.createTextNode(price)
+    priceXML.appendChild(price_text)
+
+    productXML.appendChild(priceXML)
+
+    #active
+    activeXML = doc.createElement('active')
+    active_text = doc.createTextNode(main_active + ',' + other_active)
+    activeXML.appendChild(active_text)
+
+    productXML.appendChild(activeXML)
+
+    return productXML
+
+
 max_pages = 0
 
 url = 'http://biosfera.kz/product/category?path=13_451&page=1'
@@ -51,6 +100,13 @@ while i < count_divs_a  :
 cut_url = url[:-1]
 #print (cut_url)
 
+#Cоздаем корневой элемент главной XML-ины
+doc = minidom.Document()
+
+#products
+productsXML = doc.createElement('products')
+doc.appendChild(productsXML)
+
 
 #Теперь относительно всех страниц
 count_all_pages = 0
@@ -67,23 +123,12 @@ while k < max_pages+1:
     while m < new_tree.xpath('count(.//div[@class="lotImage"]/a)'):
         #print (tree.xpath('.//div[@class="lotImage"]/a')[m].get('href'))
         print (new_tree.xpath('.//a[@class="clickbleLink"]')[m].get('href'))
+        productsXML.appendChild(getProductAttribs((new_tree.xpath('.//a[@class="clickbleLink"]')[m].get('href'))))
         m = m +1
         count_all_pages = count_all_pages + 1
     k = k + 1
-print (count_all_pages)    
+print (count_all_pages)
 
-#count nodes for parse max_page
-#print ('test=', tree.xpath('count(.//div[@class="links"]/a/text())')) 
-
-#http://biosfera.kz/product/category?path=13_451&page=1
-#<div class="links">
-#<a href="http://biosfera.kz/product/category?path=13_451&amp;page=20">20</a>
-
-#products
-#<a class="clickbleLink" href="http://biosfera.kz/product/product?path=13_451&amp;product_id=22335" title="Есть в наличии"></a>
-
-#name_of_product
-#<div class="likeH1Tite">Доктор МОМ 20 г мазь в бан. </div>
-#or
-#<span itemprop="name">Доктор МОМ 20 г мазь в бан.</span>
-
+xml_str = doc.toprettyxml(indent="  ")
+with open("minidom_example.xml", "w") as f:
+    f.write(xml_str)
