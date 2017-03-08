@@ -3,6 +3,89 @@ from lxml import etree
 
 from xml.dom import minidom
 
+def getProductAttribs(url):
+    new_request = urllib.request.Request(url)
+    new_response = urllib.request.urlopen(new_request)
+    new_html_code = new_response.read().decode('utf-8')
+    new_tree = etree.HTML(new_html_code)
+
+    name = (new_tree.xpath('.//span[@itemprop="name"]/text()')).__str__()
+    price = new_tree.xpath('.//div[@id="fix_price"]/text()').__str__()
+    main_active = (new_tree.xpath('//*[starts-with(text(),"активн")]/..//text()')).__str__()
+    other_active = (new_tree.xpath('//*[preceding::i[starts-with(.,"активн")]][following::i[starts-with(.,"вспомог")]]/text()')).__str__()
+
+    #Создаем элемент XML файла product
+    doc = minidom.Document()
+    #product
+    productXML = doc.createElement('product')
+
+    #url
+    urlXML = doc.createElement('url')
+    url_text = doc.createTextNode(url)
+    urlXML.appendChild(url_text)
+
+    productXML.appendChild(urlXML)
+
+    #name
+    nameXML = doc.createElement('name')
+    name_text = doc.createTextNode(name)
+    nameXML.appendChild(name_text)
+
+    productXML.appendChild(nameXML)
+    
+    #price
+    priceXML = doc.createElement('price')
+    price_text = doc.createTextNode(price)
+    priceXML.appendChild(price_text)
+
+    productXML.appendChild(priceXML)
+
+    #active
+    activeXML = doc.createElement('active')
+    active_text = doc.createTextNode(main_active + ',' + other_active)
+    activeXML.appendChild(active_text)
+
+    productXML.appendChild(activeXML)
+
+    return productXML
+
+
+doc = minidom.Document()
+
+#products
+productsXML = doc.createElement('products')
+doc.appendChild(productsXML)
+
+productsXML.appendChild(getProductAttribs("http://biosfera.kz/product/product?product_id=1446"))
+
+
+
+xml_str = doc.toprettyxml(indent="  ")
+with open("minidom_example.xml", "w") as f:
+    f.write(xml_str)
+
+
+
+
+
+
+
+tree = etree.parse("minidom_example.xml")
+
+mask = "Имудон"
+#Работает вытаскивает только имена массивом
+nodes = tree.xpath('/products/product/name[contains(., '+ mask +')]/text()')
+#Вытаскивает цену массивом
+nodes1 = tree.xpath('/products/product/name[contains(., '+ mask +')]//..//price/text()')
+
+
+print (nodes)
+print (nodes1)
+
+
+"""
+
+
 new_url = 'http://biosfera.kz/product/product?product_id=1446'
 #new_url = 'http://biosfera.kz/product/product?path=13_451&product_id=5623'
 #new_url = 'http://biosfera.kz/product/product?path=13_451&product_id=24005'
@@ -51,6 +134,7 @@ print ('ok')
 #http://sergo.eu/blog/online/python-3-sozdanie-xml
 
 #Формируем XML
+"""
 """
 doc = minidom.Document()
 
@@ -165,7 +249,7 @@ xml_str = doc.toprettyxml(indent="  ")
 with open("minidom_example.xml", "w") as f:
     f.write(xml_str)
 """
-
+"""
 tree = etree.parse("minidom_example.xml")
 
 mask = "Имудон"
@@ -179,7 +263,6 @@ print (nodes)
 print (nodes1)
 
 
-"""
 <products>
     <product>
         <url> </url>    
@@ -229,6 +312,6 @@ productXML.appendChild(priceXML)
 
 
 products.appendChild(product)
-"""
 
+"""
 
