@@ -11,10 +11,12 @@ class MultipleScrollingListbox(Tk):
         self.title('Scrolling Multiple Listboxes')
     
         self.label1 = Label(self, text = 'Название препарата')
-        self.label2 = Label(self, text = 'Активное вещество')
+        self.label2 = Label(self, text = 'Выбранный элемент')
+        self.label3 = Label(self, text = 'Активное вещество')
 
         self.entry1 = Entry (self)
         self.entry2 = Entry (self)
+        self.entry3 = Entry (self)
 
         #the shared scrollbar
         self.scrollbar = Scrollbar(self, orient='vertical')
@@ -34,12 +36,21 @@ class MultipleScrollingListbox(Tk):
 
         #self.scrollbar.grid(row=0, column=3, rowspan=3 )
         self.label1.grid(row=0, column=0)
-        self.label2.grid(row=0, column=2)
+        self.label2.grid(row=0, column=1)
+        self.label3.grid(row=0, column=2)
+
         self.entry1.grid(row=1,column=0)
-        self.entry2.grid(row=1,column=2)
+        self.entry2.grid(row=1,column=1)
+        self.entry3.grid(row=1,column=2)
+
+#Разобраться с тем почему же не получается вызвать событие select у listBox-а
+        self.list1.bind('<<ListboxSelect>>', self.onselect)
         self.list1.grid(row=2,column=0)
+        self.list3.bind('<<ListboxSelect>>', self.onselect)
         self.list3.grid(row=2,column=1)
+        self.list2.bind('<<ListboxSelect>>', self.onselect)
         self.list2.grid(row=2,column=2)
+        
 
         #fill the listboxes with stuff
         for x in range(30):
@@ -75,6 +86,13 @@ class MultipleScrollingListbox(Tk):
         self.list1.yview(*args)
         self.list2.yview(*args)
         self.list3.yview(*args)
+#ListBox Element Selected
+    def onselect(self ,evt):
+        # Note here that Tkinter passes an event object to onselect()
+        w = evt.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        print ('You selected item %d: "%s"' % (index, value))
 
 
 if __name__ == "__main__":
