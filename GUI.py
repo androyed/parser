@@ -9,27 +9,32 @@ class MultipleScrollingListbox(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.title('Biosphera')
-    
+        self.mask1 = StringVar()
+        self.mask2 = StringVar()
         self.label1 = Label(self, text = 'Название препарата')
         self.label2 = Label(self, text = 'Цена')
         self.label3 = Label(self, text = 'Активное вещество')
 
-        self.entry1 = Entry (self)
+        self.entry1 = Entry (self, textvariable=self.mask1)
+        #self.entry1.bind('<key>', self.key)
+        self.entry1.bind('<Return>', self.get_product)
+        
         self.entryText = StringVar()
-        self.entry2 = Entry (self, textvariable=self.entryText)
-        self.entry3 = Entry (self)
+        self.entry2 = Entry (self, textvariable=self.entryText , width = 50)
+        self.entry3 = Entry (self, textvariable=self.mask2)
+        self.entry3.bind('<Return>', self.get_active)
 
         #the shared scrollbar
         self.scrollbar = Scrollbar(self, orient='vertical')
 
         #note that yscrollcommand is set to a custom method for each listbox
-        self.list1 = Listbox(self, yscrollcommand=self.yscroll1)
+        self.list1 = Listbox(self, yscrollcommand=self.yscroll1, width = 50, height = 50)
         #self.list1.pack(fill='y', side='left')
 
-        self.list2 = Listbox(self, yscrollcommand=self.yscroll2)
+        self.list2 = Listbox(self, yscrollcommand=self.yscroll2, width = 50, height = 50)
         #self.list2.pack(expand=1, fill='both', side='left')
 
-        self.list3 = Listbox(self, yscrollcommand=self.yscroll3)
+        self.list3 = Listbox(self, yscrollcommand=self.yscroll3, width = 50, height = 50)
         #self.list3.pack(fill='y', side='left')
 
         self.scrollbar.config(command=self.yview)
@@ -51,22 +56,44 @@ class MultipleScrollingListbox(Tk):
         self.list2.bind('<<ListboxSelect>>', self.onselect)
         self.list2.grid(row=2,column=2)
 
-        self.mask = StringVar()
+        
         
     
-        tree = etree.parse("minidom_example.xml")
+        self.tree = etree.parse("minidom_example.xml")
 
         
-        self.mask.set("a")
+        #self.mask.set("a")
         #Работает вытаскивает только имена массивом
-        nodes = tree.xpath('/products/product/name[contains(., '+ str(self.mask) +')]/text()')
+        #nodes = tree.xpath('/products/product/name[contains(., '+ str(self.mask) +')]/text()')
 
         #Вытаскивает активное вещество
-        nodes1 = tree.xpath('/products/product/name[contains(., '+ str(self.mask) +')]//..//active/text()')
+        #nodes1 = tree.xpath('/products/product/name[contains(., '+ str(self.mask) +')]//..//active/text()')
 
         #Вытаскивает цену массивом
-        nodes2 = tree.xpath('/products/product/name[contains(., '+ str(self.mask) +')]//..//price/text()')
+        #nodes2 = tree.xpath('/products/product/name[contains(., '+ str(self.mask) +')]//..//price/text()')
 
+        #self.list1.delete(0, END)
+        #self.list2.delete(0, END)
+        #self.list3.delete(0, END)
+        #for i in nodes:
+        #    self.list1.insert(END,i)
+        #for i in nodes1:
+        #    self.list2.insert(END,i)
+        #for i in nodes2:
+        #    self.list3.insert(END,i)
+        #print ("ok")
+
+    def updateListBoxesProduct(self, mask_new):
+        
+        print ('mask_product=' + mask_new)
+        #mask_new = 'Грип'
+        nodes = self.tree.xpath('/products/product/name[contains(.,"'+str(mask_new)+'")]/text()')
+        
+        #Работает вытаскивает только имена массивом
+        #Вытаскивает активное вещество
+        nodes1 = self.tree.xpath('/products/product/name[contains(.,"'+str(mask_new)+'")]//..//active/text()')
+        #Вытаскивает цену массивом
+        nodes2 = self.tree.xpath('/products/product/name[contains(.,"'+str(mask_new)+'")]//..//price/text()')
         self.list1.delete(0, END)
         self.list2.delete(0, END)
         self.list3.delete(0, END)
@@ -76,10 +103,41 @@ class MultipleScrollingListbox(Tk):
             self.list2.insert(END,i)
         for i in nodes2:
             self.list3.insert(END,i)
-        print ("ok")
 
+    def updateListBoxesActive(self, mask_new):
         
+        print ('mask_active=' + mask_new)
+        #mask_new = 'Грип'
+        nodes = self.tree.xpath('/products/product/active[contains(.,"'+str(mask_new)+'")]//..//name/text()')
+        
+        #Работает вытаскивает только имена массивом
+        #Вытаскивает активное вещество
+        nodes1 = self.tree.xpath('/products/product/active[contains(.,"'+str(mask_new)+'")]/text()')
+        #Вытаскивает цену массивом
+        nodes2 = self.tree.xpath('/products/product/active[contains(.,"'+str(mask_new)+'")]//..//price/text()')
+        self.list1.delete(0, END)
+        self.list2.delete(0, END)
+        self.list3.delete(0, END)
+        for i in nodes:
+            self.list1.insert(END,i)
+        for i in nodes1:
+            self.list2.insert(END,i)
+        for i in nodes2:
+            self.list3.insert(END,i)
 
+    #def ret(self, event):
+        
+    def get_product(self, event):
+        #print (event.widget.get())
+        self.updateListBoxesProduct(event.widget.get())
+
+    def get_active(self, event):
+        #print (event.widget.get())
+        self.updateListBoxesActive(event.widget.get())
+        
+    def key(self, event):
+        print ('a')
+        
 #for i in list1:
 #    listbox1.insert(END,i)
 
