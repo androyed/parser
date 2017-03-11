@@ -56,6 +56,7 @@ def getProductAttribs(url):
 
 
 def getAllProducts (url):
+        max_pages = 0
         request = urllib.request.Request(url)
         response = urllib.request.urlopen(request)
         html_code = response.read().decode('utf-8')
@@ -100,17 +101,17 @@ def getAllProducts (url):
 
 
 
-max_pages = 0
+#max_pages = 0
 
 
 #Cоздаем корневой элемент главной XML-ины
-#doc = minidom.Document()
+doc = minidom.Document()
 
 #products
-#productsXML = doc.createElement('products')
-#doc.appendChild(productsXML)
+productsXML = doc.createElement('products')
+doc.appendChild(productsXML)
 
-url = 'http://biosfera.kz/product/category?path=13_451&page=1'
+#url = 'http://biosfera.kz/product/category?path=13_451&page=1'
 url = 'http://biosfera.kz/product/category?path=13'
 #getAllProducts(url)
 
@@ -128,22 +129,17 @@ while n < (count_categories ) :
         prev_page = main_tree.xpath('.//div[@class="sectionsList"]/a')[n].get('href')
         prev_page = prev_page + '&page=1'
         print(prev_page)
+        getAllProducts(prev_page)        
         n = n + 1
     else:
         prev_page = main_tree.xpath('.//div[@class="sectionsList"]/a')[n].get('href')
         prev_page = prev_page + '?page=1'
         print(prev_page)
+        getAllProducts(prev_page)        
         n = n + 1
     
 #prev_page = main_tree.xpath('.//div[@class="sectionsList"]/a/text()')
 
-#xml_str = doc.toprettyxml(indent="  ")
-#with open("minidom_example.xml", "w") as f:
-#    f.write(xml_str)
-
-
-
-
-    
-
-
+xml_str = doc.toprettyxml(indent="  ")
+with open("minidom_example.xml", "w") as f:
+    f.write(xml_str)
